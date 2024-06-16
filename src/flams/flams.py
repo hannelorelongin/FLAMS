@@ -37,9 +37,9 @@ def is_available(program):
 
     """
     if shutil.which(program) is not None:
-        logging.info("Checking third-party depencies. Installation of " + program + " : OK.")
+        logging.info("Checking third-party dependencies. Installation of " + program + " : OK.")
     else:
-        logging.error("Checking third-party depencies. Installation of " + program + " failed verification: it is not available on the path.. exiting FLAMS.")
+        logging.error("Checking third-party dependencies. Installation of " + program + " failed verification: it is not available on the path... exiting FLAMS.")
         sys.exit()
 
 def flams_blast(args, fasta, amino_acid, pos, out, pwd):

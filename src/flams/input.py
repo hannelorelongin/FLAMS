@@ -319,14 +319,20 @@ def check_data_dir(args):
         Arguments passed to FLAMS
 
     """
+    exit_message = "Please make sure the provided path is correct. Exiting FLAMS..."
+
+    if args.data_dir.exists() and not args.data_dir.is_dir():
+        logging.error("Provided data directory is not a " +
+                    f"directory: {args.data_dir}. {exit_message}")
+        sys.exit()
+
     if not args.data_dir.is_dir():
         if args.data_dir.parent.is_dir():
             os.mkdir(args.data_dir)
             logging.info(f"Data directory created: {args.data_dir}")
         else:
-            logging.error(f"Provided path is not an existing " +
-                        "path: {args.data_dir}. Please make sure the provided path " +
-                        "is correct. Exiting FLAMS...")
+            logging.error("Provided path is not an existing " +
+                        f"path: {args.data_dir}. {exit_message}")
             sys.exit()
 
 
