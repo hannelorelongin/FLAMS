@@ -36,7 +36,7 @@ def get_fasta(descriptor, location):
 
     """
     # HTTP request with stream. This way, we get the size of the file first and can begin downloading it in chunks.
-    req = requests.get(URL.format(descriptor), stream=True)
+    req = requests.get(URL.format(descriptor), stream = True)
 
     # Raise an exception if HTTP request failed.
     req.raise_for_status()
@@ -50,9 +50,10 @@ def get_fasta(descriptor, location):
         plm = myzip.read(myzip.namelist()[0]).decode("UTF-8")
         # SeqIO can not write greek letter beta, immediately change this
         if descriptor == "β-Hydroxybutyrylation":
-            plm = plm.replace('β','beta')
+            plm = plm.replace("β", "beta")
 
-    with open(location, "a", encoding="UTF-8") as out:
+    # actually create fasta file from PTM records
+    with open(location, "a", encoding = "UTF-8") as out:
         SeqIO.write(_convert_plm_to_fasta(plm), out, "fasta")
 
     logging.info(f"Converted and stored CPMLv4 {descriptor} Database entries as FASTA entries for the local {descriptor} BLAST database format.")
@@ -70,18 +71,21 @@ def _convert_plm_to_fasta(plm):
 
     """
     recs = []
-    reader = csv.reader(StringIO(plm), delimiter="\t")
+    reader = csv.reader(StringIO(plm), delimiter = "\t")
+    # create FLAMS records based on the CPLM information
     for row in reader:
-        #Fix issue with spaces by casting them to underscores
-        proteinNoSpaces = f"{row[4]}".replace(" ","__")
-        speciesNoSpaces = f"{row[5]}".replace(" ","__")
+        # properties that can be directly extracted
         seq = Seq(row[6])
         length = len(row[6])
+        # properties for which we fix issue with spaces by casting them to underscores
+        proteinNoSpaces = f"{row[4]}".replace(" ", "__")
+        speciesNoSpaces = f"{row[5]}".replace(" ", "__")
+        # actually create record
         id = f"{row[1]}|{row[2]}|{length}|CPLM"
         rec = SeqRecord(
             seq,
-            id=id,
-            description=f"{proteinNoSpaces}|{row[3]}|{speciesNoSpaces} [{row[0]}|{row[7]}|{row[8]}]",
+            id = id,
+            description = f"{proteinNoSpaces}|{row[3]}|{speciesNoSpaces} [{row[0]}|{row[7]}|{row[8]}]",
         )
         recs.append(rec)
     return recs

@@ -1,0 +1,2 @@
+Uniprot ID	Protein name	Modification	K location	K window	Species	BLAST E-value	BLAST identity	BLAST coverage	CPLM ID	CPLM evidence code	CPLM evidence links	dbPTM evidence code	dbPTM evidence links	SCOP3P evidence code	SCOP3P evidence links
+P69428	tatA	Acetylation	62	57-ADFTAKTIADK-67	Escherichia coli (strain K12)	0.000428492	32.05%	98.72%	CPLM017774	Exp.	23830618	Exp.	23830618		

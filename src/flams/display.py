@@ -52,7 +52,7 @@ def _display_result(output_filename, amino_acid_x, blast_records, len):
     """
     logging.info(f"Writing .tsv output file with all conserved {amino_acid_x} modifications.")
     with open(output_filename, "w") as out_file:
-        tsv_writer = csv.writer(out_file, delimiter="\t")
+        tsv_writer = csv.writer(out_file, delimiter = "\t")
         tsv_writer.writerow(
             [
                 "Uniprot ID",
@@ -68,7 +68,9 @@ def _display_result(output_filename, amino_acid_x, blast_records, len):
                 "CPLM evidence code",
                 "CPLM evidence links",
                 "dbPTM evidence code",
-                "dbPTM evidence links"
+                "dbPTM evidence links",
+                "SCOP3P evidence code",
+                "SCOP3P evidence links"
             ]
         )
         for blast_record in blast_records:
@@ -94,12 +96,24 @@ def _display_result(output_filename, amino_acid_x, blast_records, len):
                         cplm_evidenceLink = dbDescr.split("|")[2][:-1]
                         dbptm_evidenceCode = "NA"
                         dbptm_evidenceLink = "NA"
-                    if generalDescr1.split("|")[3] == "dbPTM":
+                        scop3p_evidenceCode = "NA"
+                        scop3p_evidenceLink = "NA"
+                    elif generalDescr1.split("|")[3] == "dbPTM":
                         cplm_id = "NA"
                         cplm_evidenceCode = "NA"
                         cplm_evidenceLink = "NA"
                         dbptm_evidenceCode = dbDescr.split("|")[1]
                         dbptm_evidenceLink = dbDescr.split("|")[2][:-1]
+                        scop3p_evidenceCode = "NA"
+                        scop3p_evidenceLink = "NA"
+                    elif generalDescr1.split("|")[3] == "SCOP3P":
+                        cplm_id = "NA"
+                        cplm_evidenceCode = "NA"
+                        cplm_evidenceLink = "NA"
+                        dbptm_evidenceCode = "NA"
+                        dbptm_evidenceLink = "NA"
+                        scop3p_evidenceCode = dbDescr.split("|")[1]
+                        scop3p_evidenceLink = dbDescr.split("|")[2][:-1]
 
                     # BLAST properties
                     eval = hsp.expect
@@ -122,7 +136,9 @@ def _display_result(output_filename, amino_acid_x, blast_records, len):
                             cplm_evidenceCode,
                             cplm_evidenceLink,
                             dbptm_evidenceCode,
-                            dbptm_evidenceLink
+                            dbptm_evidenceLink,
+                            scop3p_evidenceCode,
+                            scop3p_evidenceLink
                         ]
                     )
 
@@ -143,17 +159,19 @@ def _deduplicate_output(amino_acid_x, output_pre_dedupl, output_filename):
         Output file name
 
     """
-    df = pd.read_table(output_pre_dedupl, dtype = {"dbPTM evidence links": str, "CPLM evidence links": str })
+    df = pd.read_table(output_pre_dedupl, dtype = {"dbPTM evidence links": str, "CPLM evidence links": str,  "SCOP3P evidence links": str})
     df["Protein name"] = df["Protein name"].fillna("not found")
     df2 = df.groupby(["Uniprot ID", "Modification", f"{amino_acid_x} location", f"{amino_acid_x} window", "Species",
                         "BLAST E-value", "BLAST identity", "BLAST coverage"]).agg({"Protein name" : "first",
                         "CPLM ID" : "first", "CPLM evidence code" : "first", "CPLM evidence links" : "first",
-                        "dbPTM evidence code" : "first", "dbPTM evidence links" : "first"}).reset_index()
+                        "dbPTM evidence code" : "first", "dbPTM evidence links" : "first",
+                        "SCOP3P evidence code" : "first", "SCOP3P evidence links": "first"}).reset_index()
     df2 = df2.reindex(["Uniprot ID", "Protein name", "Modification", f"{amino_acid_x} location", f"{amino_acid_x} window", "Species",
     "BLAST E-value", "BLAST identity", "BLAST coverage",
     "CPLM ID", "CPLM evidence code", "CPLM evidence links",
-    "dbPTM evidence code", "dbPTM evidence links"], axis = 1)
-    df2.to_csv(output_filename, sep="\t", index = False)
+    "dbPTM evidence code", "dbPTM evidence links",
+    "SCOP3P evidence code", "SCOP3P evidence links"], axis = 1)
+    df2.to_csv(output_filename, sep = "\t", index = False)
 
 
 def _getSequenceWindow(hsp, x_location):
@@ -172,11 +190,11 @@ def _getSequenceWindow(hsp, x_location):
         Position of amino acid X in the aligned protein that is known to be modified
 
     """
-    sequence = hsp.sbjct.replace("-","")
+    sequence = hsp.sbjct.replace("-", "")
     protSize = len(sequence)
     modPos = x_location - hsp.sbjct_start
-    xWindowMax = modPos+6
-    xWindowMin = modPos-5
+    xWindowMax = modPos + 6
+    xWindowMin = modPos - 5
     if modPos + 6 > protSize:
         xWindowMax = protSize
     if modPos - 6 < 0:

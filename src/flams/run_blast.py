@@ -18,11 +18,11 @@ from .databases import setup as db_setup
 from .utils import get_data_dir
 
 """ run_blast
-This script contains all functions necessary to search through the proteins stored in the CPLM database, with BLAST,
+This script contains all functions necessary to search through the proteins stored in the FLAMS database, with BLAST,
 and to retrieve those that contain conserved amino acid X modifications.
 """
 
-def run_blast(input, amino_acid_x, modifications, x_pos, x_range=0, evalue=0.01, num_threads=1, **kwargs,):
+def run_blast(input, amino_acid_x, modifications, x_pos, x_range = 0, evalue = 0.01, num_threads = 1, **kwargs,):
     """
     This function runs the BLAST search and the following filter steps for each modification.
     Ultimately, it only returns conserved (within the specified range) protein modifications for similar proteins.
@@ -77,11 +77,11 @@ class ModificationHeader:
     species: str
         Species that encodes the protein containing the modification
     db_id: str
-        If database is CPLM: CPLM ID for each modification. If database is dbPTM, this just states 'dbPTM'.
+        If database is CPLM: CPLM ID for each modification. If database is dbPTM or SCOP3P, this just states "dbPTM"/"SCOP3P".
     evidence_code: str
-        Evidence code for each modification (either Exp., Dat. or a combination thereof)
+        Evidence code for each modification (either Exp., Dat. or a combination thereof for CPLM; Exp. for dbPTM; Exp., Comb. for SCOP3P)
     evidence_link: str
-        Evidence link for each modification (PubMed ID for Exp., database code for Dat.)
+        Evidence link for each modification (PubMed ID for Exp./Comb., database code for Dat.)
 
     """
     uniprot_id: str
@@ -111,7 +111,7 @@ class ModificationHeader:
         return ModificationHeader(**vars)
 
 
-def _run_blast(input, amino_acid_x, modification, x_pos, x_range, evalue, num_threads=1):
+def _run_blast(input, amino_acid_x, modification, x_pos, x_range, evalue, num_threads = 1):
     """
     This function runs the BLAST search and the following filter steps for 1 modification.
     Ultimately, it only returns conserved (within the specified range) protein modifications for similar proteins.
@@ -144,12 +144,12 @@ def _run_blast(input, amino_acid_x, modification, x_pos, x_range, evalue, num_th
     logging.info(f"Running BLAST search for {input} against local {modification} BLAST database.")
     # Run BLAST
     blast_exec = NcbiblastpCommandline(
-        query=input,
-        db=BLASTDB,
-        evalue=evalue,
-        outfmt=5,
-        out=BLAST_OUT,
-        num_threads=num_threads,
+        query = input,
+        db = BLASTDB,
+        evalue = evalue,
+        outfmt = 5,
+        out = BLAST_OUT,
+        num_threads = num_threads,
     )
     blast_exec()
 
@@ -202,13 +202,13 @@ def _filter_blast(blast_record, amino_acid_x, x_pos, x_range, evalue) -> Blast:
         for hsp in filter1_hsps:
             # To assess whether a hsp contains a conserved modification, we need to
             # (1) find the location of the query modification in the aligned query
-            if hsp.query.find('-') == -1:
+            if hsp.query.find("-") == -1:
             # (2) find out if the aligned position (+- range) in the hit is amino acid X
                 if len(_findXs_in_alignedHit(hsp, amino_acid_x, x_pos, x_range)) != 0:
             # (3) if this aligned position is amino acid X, was this the amino acid X carrying the modification
                     _add_conservedModX_to_listConsHsp(hsp, amino_acid_x, x_pos, x_range, mod, filter2_hsps)
             # (1) find the location of the query modification in the aligned query
-            elif (hsp.query_start + hsp.query.find('-') + 1) > x_pos:
+            elif (hsp.query_start + hsp.query.find("-") + 1) > x_pos:
             # (2) find out if the aligned position (+- range) in the hit is amino acid X
                 if len(_findXs_in_alignedHit(hsp, amino_acid_x, x_pos, x_range)) != 0:
             # (3) if this aligned position is amino acid X, was this the amino acid X carrying the modification
@@ -217,9 +217,9 @@ def _filter_blast(blast_record, amino_acid_x, x_pos, x_range, evalue) -> Blast:
             else:
             #    should adapt amino acid X position here to match number of gaps before
                 countGapBefore = hsp.query[0:x_pos+1].count("-")
-                newSeq = hsp.query[0:x_pos+1].replace("-","") + hsp.query[x_pos+1:len(hsp.query)]
+                newSeq = hsp.query[0:x_pos+1].replace("-", "") + hsp.query[x_pos+1:len(hsp.query)]
                 while newSeq[0:x_pos+1].find('-') != -1:
-                    newSeq = newSeq[0:x_pos+1].replace("-","") + newSeq[x_pos+1:len(newSeq)]
+                    newSeq = newSeq[0:x_pos+1].replace("-", "") + newSeq[x_pos+1:len(newSeq)]
                     countGapBefore += 1
             # (2) find out if the aligned position (+- range) in the hit is amino acid X
                 if len(_findXs_in_alignedHit(hsp, amino_acid_x, x_pos + countGapBefore, x_range))  != 0:
@@ -310,7 +310,7 @@ def _add_conservedModX_to_listConsHsp(hsp, amino_acid_x, x_pos, x_range, modific
     """
     for i in _findXs_in_alignedHit(hsp, amino_acid_x, x_pos, x_range):
         indexXhit = x_pos - hsp.query_start + i
-        numGapUntilX = hsp.sbjct[0:x_pos - hsp.query_start + i].count('-')
+        numGapUntilX = hsp.sbjct[0:x_pos - hsp.query_start + i].count("-")
         coordXOriginalSubject = indexXhit - numGapUntilX + hsp.sbjct_start
         if modification.position == coordXOriginalSubject:
             listHsp.append(hsp)
