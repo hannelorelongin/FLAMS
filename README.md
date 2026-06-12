@@ -98,7 +98,7 @@ With the following command, you search whether the *Mycobabcterium smegmatis*' F
 
 You can find the example input and output data in the folder `test_data`. The output data is organized in folders reflecting the FLAMS version used to generate it, as the output can vary depending on the exact FLAMS version (due to FLAMS database updates).
 
-For more example use cases, see the Supplementary information of the paper.
+For more example use cases, see the Supplementary information of the paper or the folder `suppl_material`.
 
 ## Output
 
